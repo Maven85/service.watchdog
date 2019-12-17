@@ -25,7 +25,6 @@ import logging
 import unicodedata
 from threading import Thread
 from watchdog.utils.compat import queue
-from kodi_six.utils import py2_decode
 
 from watchdog.events import (
     FileDeletedEvent,
@@ -83,14 +82,13 @@ logger = logging.getLogger(__name__)
 class FSEventsQueue(Thread):
     """ Low level FSEvents client. """
 
-
     def __init__(self, path):
         Thread.__init__(self)
         self._queue = queue.Queue()
         self._run_loop = None
 
         if isinstance(path, bytes):
-            self._path = py2_decode(path)
+            self._path = path.decode('utf-8')
         self._path = unicodedata.normalize('NFC', self._path)
 
         context = None
@@ -101,7 +99,6 @@ class FSEventsQueue(Thread):
             kFSEventStreamCreateFlagNoDefer | kFSEventStreamCreateFlagFileEvents)
         if self._stream_ref is None:
             raise IOError("FSEvents. Could not create stream.")
-
 
     def run(self):
         pool = AppKit.NSAutoreleasePool.alloc().init()
@@ -121,11 +118,9 @@ class FSEventsQueue(Thread):
         # Make sure waiting thread is notified
         self._queue.put(None)
 
-
     def stop(self):
         if self._run_loop is not None:
             CFRunLoopStop(self._run_loop)
-
 
     def _callback(self, streamRef, clientCallBackInfo, numEvents, eventPaths, eventFlags, eventIDs):
         events = [NativeEvent(path, flags, _id) for path, flags, _id in
@@ -134,7 +129,6 @@ class FSEventsQueue(Thread):
         for e in events:
             logger.debug(e)
         self._queue.put(events)
-
 
     def read_events(self):
         """
@@ -147,8 +141,6 @@ class FSEventsQueue(Thread):
 
 
 class NativeEvent(object):
-
-
     def __init__(self, path, flags, event_id):
         self.path = path
         self.flags = flags
@@ -164,7 +156,6 @@ class NativeEvent(object):
         self.is_symlink = bool(flags & kFSEventStreamEventFlagItemIsSymlink)
         self.is_directory = bool(flags & kFSEventStreamEventFlagItemIsDir)
 
-
     @property
     def _event_type(self):
         if self.is_created: return "Created"
@@ -174,7 +165,6 @@ class NativeEvent(object):
         if self.is_inode_meta_mod: return "InodeMetaMod"
         if self.is_xattr_mod: return "XattrMod"
         return "Unknown"
-
 
     def __repr__(self):
         s = "<NativeEvent: path=%s, type=%s, is_dir=%s, flags=%s, id=%s>"
@@ -186,16 +176,13 @@ class FSEventsEmitter(EventEmitter):
     FSEvents based event emitter. Handles conversion of native events.
     """
 
-
     def __init__(self, event_queue, watch, timeout=DEFAULT_EMITTER_TIMEOUT):
         EventEmitter.__init__(self, event_queue, watch, timeout)
         self._fsevents = FSEventsQueue(watch.path)
         self._fsevents.start()
 
-
     def on_thread_stop(self):
         self._fsevents.stop()
-
 
     def queue_events(self, timeout):
         events = self._fsevents.read_events()
@@ -249,7 +236,5 @@ class FSEventsEmitter(EventEmitter):
 
 
 class FSEventsObserver2(BaseObserver):
-
-
     def __init__(self, timeout=DEFAULT_OBSERVER_TIMEOUT):
         BaseObserver.__init__(self, emitter_class=FSEventsEmitter, timeout=timeout)

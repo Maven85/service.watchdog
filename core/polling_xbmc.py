@@ -16,13 +16,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from kodi_six.utils import py2_decode
 
 import xbmcvfs
 from . import settings
 from functools import partial
 from .polling import Poller, PollerNonRecursive, file_list_from_walk, hidden
 from .utils import raise_if_aborted
-from kodi_six.utils import py2_decode
 
 
 def _walk(path):
@@ -30,8 +30,8 @@ def _walk(path):
     dirs, files = xbmcvfs.listdir(path)
     # xbmcvfs bug: sometimes return invalid utf-8 encoding. we only care about
     # finding changed paths so it's ok to ignore here.
-    dirs = [path + py2_decode(_) for _ in dirs if not hidden(_)]
-    files = [path + py2_decode(_) for _ in files if not hidden(_)]
+    dirs = [path + py2_decode(_, errors='ignore') for _ in dirs if not hidden(_)]
+    files = [path + py2_decode(_, errors='ignore') for _ in files if not hidden(_)]
     yield dirs, files
     for d in dirs:
         for dirs, files in _walk(d + '/'):
@@ -40,7 +40,7 @@ def _walk(path):
 
 def _list_files(path):
     dirs, files = xbmcvfs.listdir(path)
-    return [path + '/' + py2_decode(f) for f in files if not hidden(f)]
+    return [path + '/' + py2_decode(f, errors='ignore') for f in files if not hidden(f)]
 
 
 def _get_mtime(path):

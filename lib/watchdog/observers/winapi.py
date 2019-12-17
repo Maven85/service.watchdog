@@ -41,7 +41,6 @@ from __future__ import with_statement
 import ctypes.wintypes
 import struct
 from functools import reduce
-from kodi_six.utils import py2_decode
 
 try:
     LPVOID = ctypes.wintypes.LPVOID
@@ -264,7 +263,7 @@ def _parse_event_buffer(readBuffer, nBytes):
         ptr = ctypes.addressof(fni) + FILE_NOTIFY_INFORMATION.FileName.offset
         # filename = ctypes.wstring_at(ptr, fni.FileNameLength)
         filename = ctypes.string_at(ptr, fni.FileNameLength)
-        results.append((fni.Action, py2_decode(filename)))
+        results.append((fni.Action, filename.decode('utf-16')))
         numToSkip = fni.NextEntryOffset
         if numToSkip <= 0:
             break
@@ -316,8 +315,6 @@ def read_directory_changes(handle, recursive):
 
 
 class WinAPINativeEvent(object):
-
-
     def __init__(self, action, src_path):
         self.action = action
         self.src_path = src_path

@@ -29,7 +29,6 @@ import sys
 import threading
 import unicodedata
 import _watchdog_fsevents as _fsevents
-from kodi_six.utils import py2_encode
 
 from watchdog.events import (
     FileDeletedEvent,
@@ -68,17 +67,14 @@ class FSEventsEmitter(EventEmitter):
         ``float``
     """
 
-
     def __init__(self, event_queue, watch, timeout=DEFAULT_EMITTER_TIMEOUT):
         EventEmitter.__init__(self, event_queue, watch, timeout)
         self._lock = threading.Lock()
         self.snapshot = DirectorySnapshot(watch.path, watch.is_recursive)
 
-
     def on_thread_stop(self):
         _fsevents.remove_watch(self.watch)
         _fsevents.stop(self)
-
 
     def queue_events(self, timeout):
         with self._lock:
@@ -110,11 +106,8 @@ class FSEventsEmitter(EventEmitter):
             for src_path, dest_path in events.dirs_moved:
                 self.queue_event(DirMovedEvent(src_path, dest_path))
 
-
     def run(self):
         try:
-
-
             def callback(pathnames, flags, emitter=self):
                 emitter.queue_events(emitter.timeout)
 
@@ -128,7 +121,6 @@ class FSEventsEmitter(EventEmitter):
             #    new_snapshot = DirectorySnapshot(emitter.watch.path, False)
             #    diff = new_snapshot - emitter.snapshot
             #    emitter.snapshot = new_snapshot
-
 
             # INFO: FSEvents reports directory notifications recursively
             # by default, so we do not need to add subdirectory paths.
@@ -151,11 +143,9 @@ class FSEventsEmitter(EventEmitter):
 
 class FSEventsObserver(BaseObserver):
 
-
     def __init__(self, timeout=DEFAULT_OBSERVER_TIMEOUT):
         BaseObserver.__init__(self, emitter_class=FSEventsEmitter,
                               timeout=timeout)
-
 
     def schedule(self, event_handler, path, recursive=False):
         # Python 2/3 compat
@@ -178,5 +168,5 @@ class FSEventsObserver(BaseObserver):
             # _watchdog_fsevents.so was not changed for the sake of backwards
             # compatibility.
             if sys.version_info < (3,):
-                path = py2_encode(path)
+                path = path.encode('utf-8')
         return BaseObserver.schedule(self, event_handler, path, recursive)

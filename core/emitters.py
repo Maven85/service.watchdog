@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from kodi_six.utils import py2_decode
 
 import os
 from watchdog.observers.api import BaseObserver
@@ -23,7 +24,6 @@ from watchdog.observers.api import ObservedWatch
 from .polling_local import LocalPoller
 from .polling_xbmc import VFSPoller
 from .utils import encode_path, is_url
-from kodi_six.utils import py2_decode
 
 try:
     from watchdog.observers.inotify import InotifyEmitter as NativeEmitter

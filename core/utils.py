@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from kodi_six.utils import py2_encode, py2_decode
 
 import os
 import re
@@ -24,13 +25,12 @@ import xbmc
 import xbmcgui
 import json
 from threading import Condition
-from kodi_six.utils import py2_encode, py2_decode
 from six.moves.urllib.parse import unquote
 
 
 def log(msg, level=xbmc.LOGDEBUG):
     from . import settings
-    xbmc.log(py2_encode("[" + settings.ADDON_ID + "] " + msg), level)
+    xbmc.log(py2_encode("[" + settings.ADDON_ID + "] " + msg, errors='replace'), level)
 
 
 def encode_path(path):
@@ -38,7 +38,7 @@ def encode_path(path):
     system encoding is assumed to be ascii. """
     if sys.platform.startswith('win'):
         return path
-    return py2_encode(path)
+    return path.encode('utf-8')
 
 
 def decode_path(path):
@@ -57,9 +57,9 @@ def escape_param(s):
 
 
 def rpc(method, **params):
-    params = json.dumps(py2_encode(params))
+    params = json.dumps(params)
     query = '{"jsonrpc": "2.0", "method": "%s", "params": %s, "id": 1}' % (method, params)
-    return json.loads(py2_encode(xbmc.executeJSONRPC(query)))
+    return json.loads(xbmc.executeJSONRPC(query))
 
 
 def _split_multipaths(paths):

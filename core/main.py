@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+from kodi_six.utils import py2_encode, py2_decode
 
 import os
 import time
@@ -32,7 +33,6 @@ from itertools import repeat
 from watchdog.events import FileSystemEventHandler
 from watchdog.utils.compat import Event
 from .emitters import MultiEmitterObserver
-from kodi_six.utils import py2_encode, py2_decode
 
 
 class XBMCIF(threading.Thread):
