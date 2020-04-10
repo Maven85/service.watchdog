@@ -16,5 +16,8 @@
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
         <forum>http://forum.xbmc.org/showthread.php?tid=128896</forum>
         <source>https://github.com/takoi/xbmc-addon-watchdog</source>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
     </extension>
 </addon>

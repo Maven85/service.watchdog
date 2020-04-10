@@ -1,3 +1,6 @@
+[B]0.9.8[/B]
+- added assets tag in addon.xml
+
 [B]0.9.7[/B]
 - increased number of possible custom sources to 10
 
